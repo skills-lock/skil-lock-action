@@ -15,15 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # End-to-end smoke runs the composite against the testdata fixture, which
-  # requires the workflow token to be able to read the skills-lock/skil-lock
-  # release. While that repo is private the per-repo GITHUB_TOKEN cannot
-  # cross-read it, so this job skips. It starts running automatically once
-  # skil-lock flips public in Phase 3 — same gating pattern as the CodeQL
-  # workflow over in the skil-lock repo.
+  # End-to-end smoke runs the composite against the testdata fixture.
   composite-smoke:
     name: Composite smoke (${{ matrix.os }})
-    if: ${{ !github.event.repository.private }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
