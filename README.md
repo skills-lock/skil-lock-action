@@ -31,6 +31,8 @@ jobs:
       - uses: skills-lock/skil-lock-action@v0.1.0
         with:
           pin-binary: v0.1.0
+          # comment: 'true'   # default
+          # path: '.'         # default
 ```
 
 ## Inputs

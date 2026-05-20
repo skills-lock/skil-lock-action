@@ -35,7 +35,7 @@ jobs:
       - name: Run SkilLock against testdata fixture
         uses: ./
         with:
-          pin-binary: v0.1.0-rc1
+          pin-binary: v0.1.0
           path: testdata
           comment: 'false'
 
