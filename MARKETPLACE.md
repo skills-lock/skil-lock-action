@@ -104,6 +104,6 @@ No further action needed.
 
 ## After publishing
 
-- Confirm the listing appears at `https://github.com/marketplace/actions/skil-lock-ci` (the slug GitHub generates from the name).
+- Confirm the listing appears at `https://github.com/marketplace/actions/skillock-ci` (GitHub generates the slug by lowercasing the `name:` from action.yml — `SkilLock CI` → `skillock-ci`, no hyphen between "skil" and "lock" because there isn't one in the source name).
 - The first hour after publish, refresh once to confirm assets render and the install snippet is correct.
 - If the README in this repo updates, the Marketplace listing does NOT auto-update — re-publish from the next release.
