@@ -26,7 +26,7 @@ body:
     id: scope-check
     attributes:
       label: Scope check
-      description: This Action is intentionally narrow — see `PRODUCT.md` §16 in the [skil-lock repo](https://github.com/skills-lock/skil-lock) for the out-of-scope list.
+      description: This Action is intentionally narrow — see ["What's NOT in v0.1"](https://github.com/skills-lock/skil-lock#whats-not-in-v01-intentionally) in the skil-lock README before filing.
       options:
         - label: I've read the out-of-scope list and this request is within v0.1 scope.
           required: true
