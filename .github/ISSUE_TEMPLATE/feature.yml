@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose a new input, output, or workflow capability.
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow need is not covered today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: New input, new behavior, change to comment format, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: checkboxes
+    id: scope-check
+    attributes:
+      label: Scope check
+      description: This Action is intentionally narrow — see `PRODUCT.md` §16 in the [skil-lock repo](https://github.com/skills-lock/skil-lock) for the out-of-scope list.
+      options:
+        - label: I've read the out-of-scope list and this request is within v0.1 scope.
+          required: true

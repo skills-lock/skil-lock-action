@@ -1,0 +1,19 @@
+# skills.lock — generated and maintained by skil-lock. Do not hand-edit.
+# Commit this file. PR reviewers will see capability deltas inline.
+
+schema_version: "0.1"
+generated_at: 2026-05-20T11:44:00Z
+generated_by: skil-lock 0.1.0-rc1
+skills:
+  hello:
+    runtime: claude
+    source_path: .claude/skills/hello/SKILL.md
+    version: 0.1.0
+    content_hash: sha256:82d8bf616594cf42cbc8e9b515c185512360e535ac6b2b84372a33a9a4fb4ece
+    behavior:
+      shell_commands: []
+      network_urls: []
+      file_reads: []
+      file_writes: []
+      allowed_tools: []
+      bundled_scripts: []

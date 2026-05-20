@@ -1,0 +1,159 @@
+name: 'SkilLock CI'
+description: 'Pin approved AI Skill behavior; block unapproved drift in CI.'
+author: 'SkilLock'
+branding:
+  icon: 'lock'
+  color: 'blue'
+
+inputs:
+  pin-binary:
+    description: |
+      skil-lock release tag to download (e.g. v0.1.0 or v0.1.0-rc1).
+      REQUIRED. No floating refs — pin to an exact tag.
+    required: true
+  comment:
+    description: 'Post or update a PR comment with the capability diff. true|false.'
+    required: false
+    default: 'true'
+  path:
+    description: 'Repository root containing .claude/skills/ or .codex/skills/.'
+    required: false
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        set -euo pipefail
+        PIN='${{ inputs.pin-binary }}'
+        if [[ -z "$PIN" ]]; then
+          echo "::error::pin-binary input is required (no floating refs)."
+          exit 1
+        fi
+        if ! [[ "$PIN" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc[0-9]+)?$ ]]; then
+          echo "::error::pin-binary must look like v0.1.0 or v0.1.0-rc1 (got '$PIN')."
+          exit 1
+        fi
+
+    - name: Detect platform
+      id: platform
+      shell: bash
+      run: |
+        set -euo pipefail
+        case "$(uname -s)" in
+          Linux)  os=linux ;;
+          Darwin) os=darwin ;;
+          *) echo "::error::unsupported OS: $(uname -s)"; exit 1 ;;
+        esac
+        case "$(uname -m)" in
+          x86_64|amd64) arch=amd64 ;;
+          aarch64|arm64) arch=arm64 ;;
+          *) echo "::error::unsupported arch: $(uname -m)"; exit 1 ;;
+        esac
+        echo "os=$os" >> "$GITHUB_OUTPUT"
+        echo "arch=$arch" >> "$GITHUB_OUTPUT"
+
+    - name: Download + verify binary
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ inputs.pin-binary }}
+        OS: ${{ steps.platform.outputs.os }}
+        ARCH: ${{ steps.platform.outputs.arch }}
+      run: |
+        set -euo pipefail
+        STAGE="${RUNNER_TEMP}/skil-lock-bin"
+        rm -rf "$STAGE" && mkdir -p "$STAGE"
+        cd "$STAGE"
+
+        VER_NO_V="${VERSION#v}"
+        ARCHIVE="skil-lock_${VER_NO_V}_${OS}_${ARCH}.tar.gz"
+        CHECKSUMS="checksums.txt"
+
+        gh release download "$VERSION" \
+          --repo skills-lock/skil-lock \
+          --pattern "$ARCHIVE" \
+          --pattern "$CHECKSUMS" \
+          --clobber
+
+        EXPECTED=$(awk -v f="$ARCHIVE" '$2==f {print $1}' "$CHECKSUMS")
+        if [[ -z "$EXPECTED" ]]; then
+          echo "::error::checksum entry missing for $ARCHIVE in $CHECKSUMS"
+          exit 1
+        fi
+        ACTUAL=$(sha256sum "$ARCHIVE" | awk '{print $1}')
+        if [[ "$EXPECTED" != "$ACTUAL" ]]; then
+          echo "::error::checksum mismatch for $ARCHIVE — expected $EXPECTED, got $ACTUAL"
+          exit 1
+        fi
+
+        tar -xzf "$ARCHIVE"
+        chmod +x skil-lock
+        echo "$STAGE" >> "$GITHUB_PATH"
+
+    - name: Verify skills.lock exists
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        if [[ ! -f skills.lock ]]; then
+          echo "::error::skills.lock not found in '${{ inputs.path }}'. Run 'skil-lock init --baseline .' locally and commit it before enabling this Action."
+          exit 1
+        fi
+
+    - name: Run skil-lock ci
+      id: ci
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        set -uo pipefail
+        OUT="${RUNNER_TEMP}/skil-lock-ci-output.md"
+        ERR="${RUNNER_TEMP}/skil-lock-ci-stderr.txt"
+        set +e
+        skil-lock ci > "$OUT" 2> "$ERR"
+        EXIT=$?
+        set -e
+        cat "$ERR" >&2 || true
+        cat "$OUT" || true
+        echo "exit-code=$EXIT" >> "$GITHUB_OUTPUT"
+
+    - name: Upsert PR comment
+      if: ${{ github.event_name == 'pull_request' && inputs.comment == 'true' }}
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+        PR: ${{ github.event.pull_request.number }}
+      run: |
+        set -euo pipefail
+        MARKER='<!-- skil-lock:pr-comment -->'
+        OUT="${RUNNER_TEMP}/skil-lock-ci-output.md"
+        BODY="${RUNNER_TEMP}/skil-lock-pr-comment.md"
+        {
+          printf '%s\n\n' "$MARKER"
+          cat "$OUT"
+        } > "$BODY"
+
+        EXISTING=$(gh api "/repos/${REPO}/issues/${PR}/comments" \
+          --paginate \
+          --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1 || true)
+
+        if [[ -n "$EXISTING" ]]; then
+          gh api --method PATCH "/repos/${REPO}/issues/comments/${EXISTING}" \
+            -f body=@"$BODY" >/dev/null
+          echo "Updated existing PR comment (id=$EXISTING)."
+        else
+          gh api --method POST "/repos/${REPO}/issues/${PR}/comments" \
+            -f body=@"$BODY" >/dev/null
+          echo "Created new PR comment."
+        fi
+
+    - name: Propagate ci exit code
+      shell: bash
+      run: |
+        EXIT=${{ steps.ci.outputs.exit-code }}
+        if [[ "$EXIT" -ne 0 ]]; then
+          echo "::error::skil-lock ci exited $EXIT — see PR comment for details."
+          exit "$EXIT"
+        fi

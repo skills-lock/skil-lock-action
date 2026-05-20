@@ -1,0 +1,6 @@
+# Fixture policy: warn mode keeps CI green even if drift is detected,
+# so this Action's CI can run the happy path without a real lockfile.
+mode: warn
+protected_paths: []
+require_approval: []
+allowed_domains: []

@@ -1,0 +1,42 @@
+name: Bug report
+description: Something in the Action behaves unexpectedly.
+labels: ["bug", "needs-triage"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, plus expected vs actual behavior.
+    validations:
+      required: true
+  - type: input
+    id: pin-binary
+    attributes:
+      label: pin-binary value
+      description: Which skil-lock release tag was the Action pinned to?
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: input
+    id: runner
+    attributes:
+      label: Runner image
+      description: From the workflow log header (e.g. ubuntu-22.04, macos-14).
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow snippet
+      description: Paste the relevant chunk of your workflow YAML.
+      render: yaml
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Action log
+      description: Relevant lines from the failed step.
+      render: shell
+    validations:
+      required: false

@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  composite-smoke:
+    name: Composite smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run SkilLock against testdata fixture
+        uses: ./
+        with:
+          pin-binary: v0.1.0-rc1
+          path: testdata
+          comment: 'false'
+
+  yaml-lint:
+    name: YAML lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v6
+      - name: yamllint action.yml + workflows
+        run: |
+          pip install --user yamllint==1.35.1
+          ~/.local/bin/yamllint -d '{extends: relaxed, rules: {line-length: disable, truthy: disable, comments-indentation: disable}}' action.yml .github/workflows/

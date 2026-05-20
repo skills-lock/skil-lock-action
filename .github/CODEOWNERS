@@ -1,0 +1,5 @@
+# Every file requires review from the listed owners before merge.
+# Branch protection enforces this via the "Require review from Code Owners" rule
+# once the repo flips public.
+
+* @skil-lock
