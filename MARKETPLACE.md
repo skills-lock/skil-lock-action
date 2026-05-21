@@ -2,7 +2,7 @@
 
 Copy/paste-ready text for publishing this Action to the GitHub Marketplace.
 
-To publish: in this repo's UI, go to **Releases → v0.1.0 → Edit release → Marketplace section → check "Publish this Action to the GitHub Marketplace"**, then fill the fields below.
+To publish: in this repo's UI, go to **Releases → v0.1.1 → Edit release → Marketplace section → check "Publish this Action to the GitHub Marketplace"**, then fill the fields below.
 
 ---
 
@@ -57,18 +57,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: skills-lock/skil-lock-action@v0.1.0
+      - uses: skills-lock/skil-lock-action@v0.1.1
         with:
-          pin-binary: v0.1.0
+          pin-binary: v0.1.1
 ```
 
 ### Inputs
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `pin-binary` | yes | — | `skil-lock` release tag (e.g. `v0.1.0`). No floating refs. |
+| `pin-binary` | yes | — | `skil-lock` release tag (e.g. `v0.1.1`). No floating refs. |
 | `comment` | no | `true` | Post/update PR comment with capability diff. |
 | `path` | no | `.` | Repository root containing `.claude/skills/` or `.codex/skills/`. |
+| `sarif` | no | `false` | Upload SARIF v2.1.0 report to GitHub Code Scanning. Requires `security-events: write`. |
 
 ### Worked example
 

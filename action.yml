@@ -19,6 +19,14 @@ inputs:
     description: 'Repository root containing .claude/skills/ or .codex/skills/.'
     required: false
     default: '.'
+  sarif:
+    description: |
+      When true, also produce a SARIF v2.1.0 report and upload it to GitHub
+      Code Scanning so findings show up in the repo's Security tab.
+      Requires the calling workflow to grant `security-events: write`.
+      true|false.
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -117,6 +125,29 @@ runs:
         cat "$ERR" >&2 || true
         cat "$OUT" || true
         echo "exit-code=$EXIT" >> "$GITHUB_OUTPUT"
+
+    - name: Generate SARIF
+      if: ${{ inputs.sarif == 'true' }}
+      id: sarif
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        set -uo pipefail
+        SARIF_FILE="${RUNNER_TEMP}/skil-lock.sarif"
+        # The SARIF rendering is independent of the exit code: a clean diff
+        # still emits a valid (results-empty) document, which is exactly
+        # what GitHub Code Scanning needs to clear stale findings.
+        set +e
+        skil-lock ci --format sarif > "$SARIF_FILE" 2>/dev/null
+        set -e
+        echo "sarif-file=$SARIF_FILE" >> "$GITHUB_OUTPUT"
+
+    - name: Upload SARIF to Code Scanning
+      if: ${{ inputs.sarif == 'true' }}
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: ${{ steps.sarif.outputs.sarif-file }}
+        category: skil-lock
 
     - name: Upsert PR comment
       if: ${{ github.event_name == 'pull_request' && inputs.comment == 'true' }}
