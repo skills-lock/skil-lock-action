@@ -2,7 +2,7 @@
 
 GitHub Action wrapper for **[skil-lock](https://github.com/skills-lock/skil-lock)** — pins approved AI Skill behavior and blocks unapproved drift in CI.
 
-> **Status: early development, private.** First public release pairs with `skil-lock` `v0.1.0`.
+> **Status: public.** Pairs with `skil-lock` `v0.1.1`. v0.1.1 adds SARIF output for GitHub Code Scanning.
 
 ## What it does
 
@@ -28,20 +28,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: skills-lock/skil-lock-action@v0.1.0
+      - uses: skills-lock/skil-lock-action@v0.1.1
         with:
-          pin-binary: v0.1.0
+          pin-binary: v0.1.1
           # comment: 'true'   # default
           # path: '.'         # default
+          # sarif: 'false'    # default; set 'true' to upload to Code Scanning
 ```
 
 ## Inputs
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `pin-binary` | yes | — | `skil-lock` release tag to download (e.g. `v0.1.0`). No floating refs. |
+| `pin-binary` | yes | — | `skil-lock` release tag to download (e.g. `v0.1.1`). No floating refs. |
 | `comment` | no | `true` | Post/update a PR comment with the capability diff. |
 | `path` | no | `.` | Repository root containing `.claude/skills/` or `.codex/skills/`. |
+| `sarif` | no | `false` | Produce a SARIF v2.1.0 report and upload it to GitHub Code Scanning. Requires `security-events: write` permission in the calling workflow. |
 
 `pin-binary` must match the format `vX.Y.Z` or `vX.Y.Z-rcN`. Pinning is enforced because the binary is downloaded at runtime; floating refs would defeat the lockfile contract this Action exists to uphold.
 
@@ -51,8 +53,28 @@ The Action needs:
 
 - `contents: read` — to check out the repo.
 - `pull-requests: write` — to post/update the PR comment (omit if you set `comment: false`).
+- `security-events: write` — only when `sarif: true`, to upload to Code Scanning.
 
 The Action uses the workflow's built-in `GITHUB_TOKEN`; no PAT required.
+
+## GitHub Code Scanning (SARIF)
+
+Set `sarif: true` to also upload findings to GitHub Code Scanning so they appear inline in the PR diff and in the repo's Security tab. The PR comment is unaffected — both surfaces show the same data.
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+steps:
+  - uses: actions/checkout@v6
+  - uses: skills-lock/skil-lock-action@v0.1.1
+    with:
+      pin-binary: v0.1.1
+      sarif: true
+```
+
+Severity mapping: `high → error`, `medium → warning`, `low|info → note`.
 
 ## Platforms
 
