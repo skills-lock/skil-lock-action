@@ -166,17 +166,22 @@ runs:
           cat "$OUT"
         } > "$BODY"
 
+        # gh api -f does not read @file like curl does. Wrap the body as a
+        # JSON payload via jq -Rs (which round-trips arbitrary text safely)
+        # and pipe it through --input - so newlines and quotes survive.
+        PAYLOAD=$(jq -Rs '{body: .}' < "$BODY")
+
         EXISTING=$(gh api "/repos/${REPO}/issues/${PR}/comments" \
           --paginate \
           --jq ".[] | select(.body | startswith(\"$MARKER\")) | .id" | head -n1 || true)
 
         if [[ -n "$EXISTING" ]]; then
-          gh api --method PATCH "/repos/${REPO}/issues/comments/${EXISTING}" \
-            -f body=@"$BODY" >/dev/null
+          printf '%s' "$PAYLOAD" | gh api --method PATCH \
+            "/repos/${REPO}/issues/comments/${EXISTING}" --input - >/dev/null
           echo "Updated existing PR comment (id=$EXISTING)."
         else
-          gh api --method POST "/repos/${REPO}/issues/${PR}/comments" \
-            -f body=@"$BODY" >/dev/null
+          printf '%s' "$PAYLOAD" | gh api --method POST \
+            "/repos/${REPO}/issues/${PR}/comments" --input - >/dev/null
           echo "Created new PR comment."
         fi
 
