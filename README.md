@@ -2,7 +2,7 @@
 
 GitHub Action wrapper for **[skil-lock](https://github.com/skills-lock/skil-lock)** — pins approved AI Skill behavior and blocks unapproved drift in CI.
 
-> **Status: public.** Pairs with `skil-lock` `v0.1.1`. v0.1.1 adds SARIF output for GitHub Code Scanning.
+> **Status: public.** Action `v0.1.2` pairs with `skil-lock` CLI `v0.1.1`. v0.1.2 fixes PR-comment rendering; v0.1.1 of the CLI adds SARIF output for GitHub Code Scanning.
 
 ## What it does
 
@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: skills-lock/skil-lock-action@v0.1.1
+      - uses: skills-lock/skil-lock-action@v0.1.2
         with:
           pin-binary: v0.1.1
           # comment: 'true'   # default

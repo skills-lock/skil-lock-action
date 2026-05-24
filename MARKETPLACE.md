@@ -2,7 +2,7 @@
 
 Copy/paste-ready text for publishing this Action to the GitHub Marketplace.
 
-To publish: in this repo's UI, go to **Releases → v0.1.1 → Edit release → Marketplace section → check "Publish this Action to the GitHub Marketplace"**, then fill the fields below.
+To publish: in this repo's UI, go to **Releases → v0.1.2 → Edit release → Marketplace section → check "Publish this Action to the GitHub Marketplace"**, then fill the fields below.
 
 ---
 
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: skills-lock/skil-lock-action@v0.1.1
+      - uses: skills-lock/skil-lock-action@v0.1.2
         with:
           pin-binary: v0.1.1
 ```
