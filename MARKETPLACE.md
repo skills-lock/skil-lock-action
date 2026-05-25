@@ -59,14 +59,14 @@ jobs:
       - uses: actions/checkout@v6
       - uses: skills-lock/skil-lock-action@v0.1.2
         with:
-          pin-binary: v0.1.1
+          pin-binary: v0.1.2
 ```
 
 ### Inputs
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `pin-binary` | yes | - | `skil-lock` release tag (e.g. `v0.1.1`). No floating refs. |
+| `pin-binary` | yes | - | `skil-lock` release tag (e.g. `v0.1.2`). No floating refs. |
 | `comment` | no | `true` | Post/update PR comment with capability diff. |
 | `path` | no | `.` | Repository root containing `.claude/skills/` or `.codex/skills/`. |
 | `sarif` | no | `false` | Upload SARIF v2.1.0 report to GitHub Code Scanning. Requires `security-events: write`. |
