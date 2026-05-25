@@ -1,6 +1,6 @@
 # skil-lock-action
 
-GitHub Action wrapper for **[skil-lock](https://github.com/skills-lock/skil-lock)** — pins approved AI Skill behavior and blocks unapproved drift in CI.
+GitHub Action wrapper for **[skil-lock](https://github.com/skills-lock/skil-lock)** - pins approved AI Skill behavior and blocks unapproved drift in CI.
 
 > **Status: public.** Action `v0.1.2` pairs with `skil-lock` CLI `v0.1.1`. v0.1.2 fixes PR-comment rendering; v0.1.1 of the CLI adds SARIF output for GitHub Code Scanning.
 
@@ -10,7 +10,7 @@ On every PR, this Action:
 
 1. Downloads a pinned `skil-lock` binary from the matching release (verifies SHA-256 against `checksums.txt`).
 2. Runs `skil-lock ci` against the repo's `skills.lock` and `.skil-lock.yaml`.
-3. Posts (or updates) a single PR comment showing the capability delta — shell commands, network URLs, file reads/writes — across every Skill in `.claude/skills/` and `.codex/skills/`.
+3. Posts (or updates) a single PR comment showing the capability delta - shell commands, network URLs, file reads/writes - across every Skill in `.claude/skills/` and `.codex/skills/`.
 4. Fails the check when policy is `mode: block` and any delta is at severity ≥ medium.
 
 ## Quick start
@@ -40,7 +40,7 @@ jobs:
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `pin-binary` | yes | — | `skil-lock` release tag to download (e.g. `v0.1.1`). No floating refs. |
+| `pin-binary` | yes | - | `skil-lock` release tag to download (e.g. `v0.1.1`). No floating refs. |
 | `comment` | no | `true` | Post/update a PR comment with the capability diff. |
 | `path` | no | `.` | Repository root containing `.claude/skills/` or `.codex/skills/`. |
 | `sarif` | no | `false` | Produce a SARIF v2.1.0 report and upload it to GitHub Code Scanning. Requires `security-events: write` permission in the calling workflow. |
@@ -51,15 +51,15 @@ jobs:
 
 The Action needs:
 
-- `contents: read` — to check out the repo.
-- `pull-requests: write` — to post/update the PR comment (omit if you set `comment: false`).
-- `security-events: write` — only when `sarif: true`, to upload to Code Scanning.
+- `contents: read` - to check out the repo.
+- `pull-requests: write` - to post/update the PR comment (omit if you set `comment: false`).
+- `security-events: write` - only when `sarif: true`, to upload to Code Scanning.
 
 The Action uses the workflow's built-in `GITHUB_TOKEN`; no PAT required.
 
 ## GitHub Code Scanning (SARIF)
 
-Set `sarif: true` to also upload findings to GitHub Code Scanning so they appear inline in the PR diff and in the repo's Security tab. The PR comment is unaffected — both surfaces show the same data.
+Set `sarif: true` to also upload findings to GitHub Code Scanning so they appear inline in the PR diff and in the repo's Security tab. The PR comment is unaffected - both surfaces show the same data.
 
 ```yaml
 permissions:
