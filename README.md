@@ -2,7 +2,7 @@
 
 GitHub Action wrapper for **[skil-lock](https://github.com/skills-lock/skil-lock)** - pins approved AI Skill behavior and blocks unapproved drift in CI.
 
-> **Status: public.** Action `v0.1.2` pairs with `skil-lock` CLI `v0.1.2`. CLI v0.1.2 swaps the renderer's em-dashes for ASCII hyphens; v0.1.1 added SARIF output for GitHub Code Scanning; Action v0.1.2 fixes PR-comment rendering.
+> **Status: public.** Action `v0.2.0` pairs with `skil-lock` CLI `v0.2.0`. CLI v0.2.0 adds per-bundled-script content digests (a rewritten script body now trips the diff), cosign keyless signing + SLSA provenance + SBOM on releases, and a documented detection boundary. Action v0.1.2 fixed PR-comment rendering; v0.1.1 added SARIF output for GitHub Code Scanning.
 
 ## What it does
 
@@ -28,9 +28,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: skills-lock/skil-lock-action@v0.1.2
+      - uses: skills-lock/skil-lock-action@v0.2.0
         with:
-          pin-binary: v0.1.2
+          pin-binary: v0.2.0
           # comment: 'true'   # default
           # path: '.'         # default
           # sarif: 'false'    # default; set 'true' to upload to Code Scanning
@@ -40,7 +40,7 @@ jobs:
 
 | Input | Required | Default | Description |
 |---|---|---|---|
-| `pin-binary` | yes | - | `skil-lock` release tag to download (e.g. `v0.1.2`). No floating refs. |
+| `pin-binary` | yes | - | `skil-lock` release tag to download (e.g. `v0.2.0`). No floating refs. |
 | `comment` | no | `true` | Post/update a PR comment with the capability diff. |
 | `path` | no | `.` | Repository root containing `.claude/skills/` or `.codex/skills/`. |
 | `sarif` | no | `false` | Produce a SARIF v2.1.0 report and upload it to GitHub Code Scanning. Requires `security-events: write` permission in the calling workflow. |
@@ -68,9 +68,9 @@ permissions:
   security-events: write
 steps:
   - uses: actions/checkout@v6
-  - uses: skills-lock/skil-lock-action@v0.1.2
+  - uses: skills-lock/skil-lock-action@v0.2.0
     with:
-      pin-binary: v0.1.2
+      pin-binary: v0.2.0
       sarif: true
 ```
 
