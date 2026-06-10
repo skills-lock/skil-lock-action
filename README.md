@@ -48,7 +48,7 @@ jobs:
 
 `pin-binary` must match the format `vX.Y.Z` or `vX.Y.Z-rcN`. Pinning is enforced because the binary is downloaded at runtime; floating refs would defeat the lockfile contract this Action exists to uphold.
 
-The sha256 comparison alone proves the archive matches `checksums.txt`; `verify-signature` additionally proves `checksums.txt` itself was produced by the `skills-lock/skil-lock` release workflow (cosign keyless, GitHub OIDC). GitHub-hosted Ubuntu runners ship cosign preinstalled.
+The sha256 comparison alone proves the archive matches `checksums.txt`; `verify-signature` additionally proves `checksums.txt` itself was produced by the `skills-lock/skil-lock` release workflow (cosign keyless, GitHub OIDC). When verification is enabled the Action installs cosign via the SHA-pinned `sigstore/cosign-installer` step (GitHub-hosted runners no longer ship it).
 
 ## Permissions
 

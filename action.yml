@@ -75,6 +75,13 @@ runs:
         echo "os=$os" >> "$GITHUB_OUTPUT"
         echo "arch=$arch" >> "$GITHUB_OUTPUT"
 
+    - name: Install cosign
+      # GitHub-hosted runners no longer ship cosign; install it whenever
+      # signature verification is enabled (auto or true). SHA-pinned for
+      # the same reason this Action requires pin-binary.
+      if: ${{ inputs.verify-signature != 'false' }}
+      uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
     - name: Download + verify binary
       shell: bash
       env:
