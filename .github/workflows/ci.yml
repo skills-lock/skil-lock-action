@@ -29,6 +29,21 @@ jobs:
       - name: Run SkilLock against testdata fixture
         uses: ./
         with:
+          pin-binary: v0.2.0
+          path: testdata
+          comment: 'false'
+      - name: Run with required signature verification (signed release)
+        if: ${{ runner.os == 'Linux' }}
+        uses: ./
+        with:
+          pin-binary: v0.2.0
+          path: testdata
+          comment: 'false'
+          verify-signature: 'true'
+      - name: Run against unsigned pre-v0.2.0 release (auto fallback)
+        if: ${{ runner.os == 'Linux' }}
+        uses: ./
+        with:
           pin-binary: v0.1.0
           path: testdata
           comment: 'false'

@@ -27,6 +27,18 @@ inputs:
       true|false.
     required: false
     default: 'false'
+  verify-signature:
+    description: |
+      Cosign keyless verification of the release's checksums.txt before it
+      is trusted for the sha256 comparison. Releases v0.2.0+ ship
+      checksums.txt.sig/.pem signed by the skil-lock release workflow via
+      GitHub OIDC.
+      'auto' (default): verify when cosign is available and the pinned
+      release ships a signature; warn and fall back to checksum-only
+      otherwise. 'true': require verification, fail if cosign or the
+      signature is missing. 'false': skip.
+    required: false
+    default: 'auto'
 
 runs:
   using: 'composite'
@@ -70,6 +82,7 @@ runs:
         VERSION: ${{ inputs.pin-binary }}
         OS: ${{ steps.platform.outputs.os }}
         ARCH: ${{ steps.platform.outputs.arch }}
+        VERIFY_SIG: ${{ inputs.verify-signature }}
       run: |
         set -euo pipefail
         STAGE="${RUNNER_TEMP}/skil-lock-bin"
@@ -85,6 +98,45 @@ runs:
           --pattern "$ARCHIVE" \
           --pattern "$CHECKSUMS" \
           --clobber
+
+        # Authenticate checksums.txt itself before trusting it: the sha256
+        # comparison below only proves the archive matches the checksum
+        # file, not that the checksum file came from the skil-lock release
+        # workflow. Keyless cosign verification pins it to the release
+        # workflow's GitHub OIDC identity.
+        case "$VERIFY_SIG" in
+          auto|true|false) ;;
+          *) echo "::error::verify-signature must be auto, true, or false (got '$VERIFY_SIG')."; exit 1 ;;
+        esac
+        if [[ "$VERIFY_SIG" != "false" ]]; then
+          SIG_OK=1
+          gh release download "$VERSION" \
+            --repo skills-lock/skil-lock \
+            --pattern "${CHECKSUMS}.sig" \
+            --pattern "${CHECKSUMS}.pem" \
+            --clobber 2>/dev/null || SIG_OK=0
+          if ! command -v cosign >/dev/null 2>&1; then
+            if [[ "$VERIFY_SIG" == "true" ]]; then
+              echo "::error::verify-signature=true but cosign is not installed on this runner."
+              exit 1
+            fi
+            echo "::warning::cosign not found; falling back to checksum-only verification."
+          elif [[ "$SIG_OK" -eq 0 ]]; then
+            if [[ "$VERIFY_SIG" == "true" ]]; then
+              echo "::error::verify-signature=true but $VERSION ships no ${CHECKSUMS}.sig/.pem (signatures start at v0.2.0)."
+              exit 1
+            fi
+            echo "::warning::$VERSION ships no checksums signature (pre-v0.2.0?); falling back to checksum-only verification."
+          else
+            cosign verify-blob \
+              --certificate "${CHECKSUMS}.pem" \
+              --signature "${CHECKSUMS}.sig" \
+              --certificate-identity-regexp '^https://github\.com/skills-lock/skil-lock/\.github/workflows/release\.yml@refs/tags/v' \
+              --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
+              "$CHECKSUMS"
+            echo "checksums.txt signature verified (cosign keyless, release workflow identity)."
+          fi
+        fi
 
         EXPECTED=$(awk -v f="$ARCHIVE" '$2==f {print $1}' "$CHECKSUMS")
         if [[ -z "$EXPECTED" ]]; then
